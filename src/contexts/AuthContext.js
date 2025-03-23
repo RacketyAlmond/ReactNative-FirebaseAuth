@@ -1,13 +1,16 @@
 // AuthContext.js
 import React, { createContext, useState, useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
+import {setDoc, doc} from "firebase/firestore";
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
+    updateProfile
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+
+
 
 export const AuthContext = createContext();
 
@@ -15,30 +18,57 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            if (currentUser) {
-                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                setUser(userDoc.exists() ? userDoc.data() : { email: currentUser.email });
-            } else {
-                setUser(null);
-            }
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
     const signUp = async (email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         return user;
     };
 
-    const saveBirthdate = async (userId, birthdate) => {
-        await setDoc(doc(db, "users", userId), { birthdate }, { merge: true });
-        setUser((prevUser) => ({ ...prevUser, birthdate }));
+    const updateProfileData = async (username, photoURL) => {
+        try {
+            const user = auth.currentUser;
+
+            if (!user) {
+                throw new Error("No user is signed in");
+            }
+            await createUserData(user, {
+                displayName: username,
+                photoURL: photoURL,
+            });
+
+            console.log("User profile updated successfully!");
+            return user;
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
     };
+
+
+    // const createUserData = async (fname, birthday, userLocation) => {
+    //     try {
+    //         const user = auth.currentUser;
+    //
+    //         if (!user) {
+    //             throw new Error("No user is signed in");
+    //         }
+    //
+    //         console.log(fname);
+    //
+    //         await setDoc(doc(db, "Users", user.uid), {
+    //             email: user.email,
+    //             firstName: fname,
+    //             birthday: birthday,
+    //             userLocation: userLocation
+    //
+    //         });
+    //         console.log("User profile updated successfully!");
+    //         return user;
+    //     } catch (error) {
+    //         console.error("Error creating profile:", error);
+    //         throw error;
+    //     }
+    // };
 
     const signIn = async (email, password) => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -51,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signUp, saveBirthdate, signIn, logout }}>
+        <AuthContext.Provider value={{ user, loading, signUp, updateProfileData, signIn, logout}}>
             {children}
         </AuthContext.Provider>
     );

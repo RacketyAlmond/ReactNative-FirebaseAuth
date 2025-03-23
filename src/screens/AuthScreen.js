@@ -2,6 +2,9 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { AuthContext } from "../contexts/AuthContext";
+import logo from "./logo.png";
+
+
 
 const AuthScreen = ({ onAuthenticated }) => {
     const { signUp, signIn } = useContext(AuthContext);
@@ -15,10 +18,10 @@ const AuthScreen = ({ onAuthenticated }) => {
             setError("");
             if (isSignUp) {
                 const user = await signUp(email, password);
-                onAuthenticated(user);
+                onAuthenticated(user, true);
             } else {
                 const user = await signIn(email, password);
-                onAuthenticated(user);
+                onAuthenticated(user, false);
             }
         } catch (error) {
             setError(error.message);
@@ -27,6 +30,8 @@ const AuthScreen = ({ onAuthenticated }) => {
 
     return (
         <View style={styles.container}>
+
+
             <Text style={styles.title}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} />
