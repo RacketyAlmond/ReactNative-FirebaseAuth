@@ -75,7 +75,6 @@ export const UserProvider = ({ children }) => {
             throw new Error("No user is signed in");
         }
 
-            // Fetch the saved user data from Firestore to update the state
             const userDoc = await getDoc(doc(db, "Users", user.uid));
             if (userDoc.exists()) {
                 const data = userDoc.data();

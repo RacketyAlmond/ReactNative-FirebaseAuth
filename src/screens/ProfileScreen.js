@@ -3,14 +3,61 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from "reac
 import Icon from "react-native-vector-icons/MaterialIcons"; // Icons for buttons
 import { useUser } from "../contexts/UserContext"; // Get user data from context
 import logo from "./logo.png";
+import map from "./map.png";
+import {doc, getDoc} from "firebase/firestore";
+import {auth, db} from "../firebaseConfig";
 
 const ProfileScreen = ({ onSignOut }) => {
-    const { userData, updateUserData, getUserData } = useUser();
-    getUserData();
-    const [fname, setFname] = useState(userData.firstName);
-    const [birthdate, setBirthdate] = useState(userData.birthday);
-    const [userLocation, setUserLocation] = useState(userData.userLocation);
-    const [about, setAbout] = useState(userData.about);
+    const { userData, setUserData, updateUserData, getUserData } = useUser();
+
+    const [fname, setFname] = useState("");
+    const [birthdate, setBirthdate] = useState("");
+    const [userLocation, setUserLocation] = useState("");
+    const [about, setAbout] = useState("");
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCount((prevCount) => prevCount + 1);
+            }, 100);
+            return () => clearInterval(intervalId);
+            }, []);
+
+    const getter = async () => {
+        const user = auth.currentUser;
+
+        try {
+            if (!user) {
+                throw new Error("No user is signed in");
+            }
+
+            const userDoc = await getDoc(doc(db, "Users", user.uid));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                setUserData(data);
+                console.log(`userData.firstName = ${userData.firstName}`);
+                console.log(`userData.birthday = ${userData.birthday}`);
+                setFname(userData.firstName);
+                setBirthdate(userData.birthday);
+                setUserLocation(userData.userLocation);
+                setAbout(userData.about);
+            }
+
+            console.log("User profile updated successfully!");
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
+    };
+
+
+
+
+
+
+
+
+
 
     // State to track which field is being edited
     const [editingField, setEditingField] = useState(null);
@@ -18,7 +65,7 @@ const ProfileScreen = ({ onSignOut }) => {
 
     const handleSend = async () => {
         try {
-            await updateUserData(fname, birthdate, userLocation, about); // Save data to Firestore
+            await updateUserData(fname, birthdate, userLocation, about);
             setEditingField(null);
         } catch (error) {
             console.error("Error saving profile:", error);
@@ -26,11 +73,16 @@ const ProfileScreen = ({ onSignOut }) => {
     };
 
 
+    useEffect(() => {
+        getter();
+    }, [count]);
+
+
     return (
         <View style={styles.container}>
             {/* Background map image */}
             <Image
-                source={{ uri: "https://your-map-image-url.com" }} // Replace with actual map URL
+                source={map} // Replace with actual map URL
                 style={styles.mapBackground}
             />
 
@@ -175,7 +227,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 160,
         position: "absolute",
-        top: 0,
+        top: 120,
     },
     backButton: {
         position: "absolute",
@@ -193,7 +245,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         borderWidth: 3,
         borderColor: "white",
-        marginTop: 50,
+        marginTop: 90,
     },
     editIcon: {
         position: "absolute",
