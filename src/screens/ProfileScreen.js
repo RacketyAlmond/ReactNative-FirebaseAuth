@@ -8,58 +8,46 @@ import {doc, getDoc} from "firebase/firestore";
 import {auth, db} from "../firebaseConfig";
 
 const ProfileScreen = ({ onSignOut }) => {
-    const { userData, setUserData, updateUserData, getUserData } = useUser();
+    const { updateUserData, getUserData } = useUser();
 
     const [fname, setFname] = useState("");
     const [birthdate, setBirthdate] = useState("");
     const [userLocation, setUserLocation] = useState("");
     const [about, setAbout] = useState("");
-    const [count, setCount] = useState(0);
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setCount((prevCount) => prevCount + 1);
-            }, 100);
-            return () => clearInterval(intervalId);
-            }, []);
 
     const getter = async () => {
         const user = auth.currentUser;
+        console.log(`user = ${user.uid}`);
 
-        try {
-            if (!user) {
-                throw new Error("No user is signed in");
-            }
+        if (!user) {
+            return Promise.reject(new Error("No user is signed in"));
+        }
 
-            const userDoc = await getDoc(doc(db, "Users", user.uid));
+        return getDoc(doc(db, "Users", user.uid)).then((userDoc) => {
             if (userDoc.exists()) {
                 const data = userDoc.data();
-                setUserData(data);
-                console.log(`userData.firstName = ${userData.firstName}`);
-                console.log(`userData.birthday = ${userData.birthday}`);
-                setFname(userData.firstName);
-                setBirthdate(userData.birthday);
-                setUserLocation(userData.userLocation);
-                setAbout(userData.about);
-            }
+                // console.log(`data = ${data.firstName}`);
+                // console.log(`userData.firstName = ${data.firstName}`);
+                // console.log(`userData.birthday = ${data.birthday}`);
 
-            console.log("User profile updated successfully!");
-        } catch (error) {
+                setFname(data.firstName);
+                setBirthdate(data.birthday);
+                setUserLocation(data.userLocation);
+                setAbout(data.about);
+            }
+            console.log("User profile created successfully!");
+        }).catch((error) => {
             console.error("Error updating profile:", error);
-            throw error;
-        }
+        });
     };
 
+    useEffect(() => {
+        getter();
+    }, []);
 
 
 
-
-
-
-
-
-
-    // State to track which field is being edited
     const [editingField, setEditingField] = useState(null);
 
 
@@ -72,10 +60,6 @@ const ProfileScreen = ({ onSignOut }) => {
         }
     };
 
-
-    useEffect(() => {
-        getter();
-    }, [count]);
 
 
     return (
