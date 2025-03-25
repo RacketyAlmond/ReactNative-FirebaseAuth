@@ -6,7 +6,7 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    const [userData, setUserData] = useState({}); // State to hold user data
+    const [userData, setUserData] = useState({});
 
     const createUserData = async (fname, birthday, userLocation, about) => {
         const user = auth.currentUser;
@@ -16,7 +16,6 @@ export const UserProvider = ({ children }) => {
         }
 
         try {
-            // Save to Firestore
             await setDoc(doc(db, "Users", user.uid), {
                 firstName: fname,
                 birthday: birthday,
@@ -24,11 +23,10 @@ export const UserProvider = ({ children }) => {
                 about: about
             });
 
-            // Fetch the saved user data from Firestore to update the state
             const userDoc = await getDoc(doc(db, "Users", user.uid));
             if (userDoc.exists()) {
                 const data = userDoc.data();
-                setUserData(data); // Set the data to the state
+                setUserData(data);
             }
 
             console.log("User profile created/updated successfully!");
@@ -53,11 +51,10 @@ export const UserProvider = ({ children }) => {
                 about: about
             });
 
-            // Fetch the saved user data from Firestore to update the state
             const userDoc = await getDoc(doc(db, "Users", user.uid));
             if (userDoc.exists()) {
                 const data = userDoc.data();
-                setUserData(data); // Set the data to the state
+                setUserData(data);
             }
 
             console.log("User profile updated successfully!");

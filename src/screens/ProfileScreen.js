@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Icons for buttons
-import { useUser } from "../contexts/UserContext"; // Get user data from context
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { useUser } from "../contexts/UserContext";
 import logo from "./logo.png";
 import map from "./map.png";
 import {doc, getDoc} from "firebase/firestore";
@@ -186,16 +186,17 @@ const ProfileScreen = ({ onSignOut }) => {
 };
 
 const styles = StyleSheet.create({
+
     mainRow: {
-        flexDirection: "row",  // Align items in a row
-        alignItems: "center",  // Center vertically
+        flexDirection: "row",
+        alignItems: "center",
         gap: 7,
         marginTop: 10,
         fontSize: 20,
     },
     secoundRow: {
-        flexDirection: "row",  // Align items in a row
-        alignItems: "center",  // Center vertically
+        flexDirection: "row",
+        alignItems: "center",
         color: "grey",
         gap: 7,
         fontSize: 15,
